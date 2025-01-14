@@ -402,7 +402,7 @@ class JanusPlugin {
   }
 
   /// This method is crucial for communicating with Janus Server's APIs it takes in data and optionally jsep for negotiating with webrtc peers
-  Future<dynamic> send({dynamic data, RTCSessionDescription? jsep, bool sdp = false}) async {
+  Future<dynamic> send({dynamic data, RTCSessionDescription? jsep}) async {
     try {
       String transaction = getUuid().v4();
       Map<String, dynamic>? response;
