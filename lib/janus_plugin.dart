@@ -268,7 +268,7 @@ class JanusPlugin {
       if (_context._apiSecret != null) {
         queryParameters["apisecret"] = _context._apiSecret!;
       }
-      var response = (await http.get(Uri.https(extractDomainFromUrl(_transport!.url!), "janus/"+_session!.sessionId.toString(), queryParameters)));
+      var response = (await http.get(Uri.http(extractDomainFromUrl(_transport!.url!), "janus/"+_session!.sessionId.toString(), queryParameters)));
       if (response.statusCode != 200 || response.body.isEmpty){
         var errorMessage = "polling is failed from janus with error code : ${response.statusCode} , header : ${response.headers}";
         print(response.body);
@@ -408,13 +408,9 @@ class JanusPlugin {
       Map<String, dynamic>? response;
       Map<String, dynamic> request = {"janus": "message", "body": data, "transaction": transaction, ..._context._apiMap, ..._context._tokenMap};
       if (jsep != null) {
-        if (sdp) {
-          request["jsep"] = jsep.sdp;
-        } else {
-          _context._logger.finest("sending jsep");
-          _context._logger.finest(jsep.toMap());
-          request["jsep"] = jsep.toMap();
-        }
+        _context._logger.finest("sending jsep");
+        _context._logger.finest(jsep.toMap());
+        request["jsep"] = jsep.toMap();
       }
       if (_transport is RestJanusTransport) {
         RestJanusTransport rest = (_transport as RestJanusTransport);

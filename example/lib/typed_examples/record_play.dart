@@ -30,7 +30,7 @@ class _RecordPlayExampleState extends State<RecordPlayExample> {
   Future<void> initializeClient() async {
     client = JanusClient(
       withCredentials: true,
-      apiSecret: "SecureIt",
+      apiSecret: "janusrocks",
       transport: RestJanusTransport(url: servermap['janus_rest']),
       iceServers: [RTCIceServer(urls: "stun:stun1.l.google.com:19302")],
     );
