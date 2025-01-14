@@ -28,8 +28,7 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     String? videocodec,
     String? videoprofile,
     bool opusred = false,
-    String textdata = "text",
-    required String jsep,
+    String textdata = "text"
   }) async {
     var payload = {
       "request": "record",
@@ -41,10 +40,6 @@ class JanusRecordPlayPlugin extends JanusPlugin {
       "videoprofile": videoprofile,
       "opusred": opusred,
       "textdata": textdata,
-      "jsep": {
-        "type": "offer",
-        "sdp": jsep,
-      },
     }..removeWhere((key, value) => value == null);
 
 

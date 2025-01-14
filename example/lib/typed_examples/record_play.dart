@@ -1,25 +1,18 @@
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:janus_client/janus_client.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart';
-import 'dart:async';
 import 'package:janus_client_example/conf.dart';
 
 class RecordPlayExample extends StatefulWidget {
   @override
-  _RecordPlayState createState() => _RecordPlayState();
+  _RecordPlayExampleState createState() => _RecordPlayExampleState();
 }
 
-class _RecordPlayState extends State<RecordPlayExample> {
-  JanusClient? client;
-  JanusSession? session;
-  JanusRecordPlayPlugin? recordPlay;
-  late WebSocketJanusTransport ws;
+class _RecordPlayExampleState extends State<RecordPlayExample> {
+  late JanusClient client;
+  late JanusSession session;
+  late JanusRecordPlayPlugin recordPlay;
   List<RecordPlayFile> recordings = [];
   TextEditingController fileNameController = TextEditingController();
-  bool recording = false;
-  bool playing = false;
 
   @override
   void initState() {
@@ -27,33 +20,41 @@ class _RecordPlayState extends State<RecordPlayExample> {
     initializeClient();
   }
 
+  @override
+  void dispose() {
+    recordPlay.dispose();
+    session.dispose();
+    super.dispose();
+  }
+
   Future<void> initializeClient() async {
-    ws = WebSocketJanusTransport(url: servermap['servercheap']);
     client = JanusClient(
       withCredentials: true,
-      isUnifiedPlan: true,
-      stringIds: false,
       apiSecret: "SecureIt",
-      transport: ws,
+      transport: RestJanusTransport(url: servermap['janus_rest']),
       iceServers: [RTCIceServer(urls: "stun:stun1.l.google.com:19302")],
     );
-    session = await client?.createSession();
-    recordPlay = await session?.attach<JanusRecordPlayPlugin>();
+    session = await client.createSession();
+    recordPlay = await session.attach<JanusRecordPlayPlugin>();
     await listRecordings();
   }
 
-  Future<void> startRecording() async {
+   Future<void> startRecording() async {
     String fileName = fileNameController.text.trim();
     if (fileName.isNotEmpty) {
       try {
-        var offer = await recordPlay?.createOffer(audioRecv: true, videoRecv: false);
-        await recordPlay?.record(fileName, jsep: offer!.sdp!);
-        setState(() {
-          recording = true;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Recording started: $fileName')),
+        // Cria uma oferta para negociação de mídia
+        var offer = await recordPlay.createOffer(audioRecv: true, videoRecv: true);
+
+        // Chama o método record com o JSEP gerado
+        int recordingId = await recordPlay.record(
+          fileName,
         );
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Recording started: $fileName (ID: $recordingId)')),
+        );
+
         await listRecordings();
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -67,12 +68,10 @@ class _RecordPlayState extends State<RecordPlayExample> {
     }
   }
 
+
   Future<void> stopRecording() async {
     try {
-      await recordPlay?.stop();
-      setState(() {
-        recording = false;
-      });
+      await recordPlay.stop();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Recording stopped')),
       );
@@ -86,10 +85,7 @@ class _RecordPlayState extends State<RecordPlayExample> {
 
   Future<void> playRecording(int id) async {
     try {
-      await recordPlay?.play(id);
-      setState(() {
-        playing = true;
-      });
+      await recordPlay.play(id);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Playing recording: $id')),
       );
@@ -102,7 +98,7 @@ class _RecordPlayState extends State<RecordPlayExample> {
 
   Future<void> listRecordings() async {
     try {
-      recordings = await recordPlay?.list() ?? [];
+      recordings = await recordPlay.list();
       setState(() {});
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,23 +108,16 @@ class _RecordPlayState extends State<RecordPlayExample> {
   }
 
   @override
-  void dispose() {
-    recordPlay?.dispose();
-    session?.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: Text('RecordPlay Example'),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
             onPressed: listRecordings,
           ),
         ],
-        title: const Text('Record and Play'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -146,11 +135,11 @@ class _RecordPlayState extends State<RecordPlayExample> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 ElevatedButton(
-                  onPressed: !recording ? startRecording : null,
+                  onPressed: startRecording,
                   child: Text('Start Recording'),
                 ),
                 ElevatedButton(
-                  onPressed: recording ? stopRecording : null,
+                  onPressed: stopRecording,
                   child: Text('Stop Recording'),
                 ),
               ],
@@ -166,7 +155,7 @@ class _RecordPlayState extends State<RecordPlayExample> {
                     subtitle: Text('Date: ${recording.date}'),
                     trailing: IconButton(
                       icon: Icon(Icons.play_arrow),
-                      onPressed: !playing ? () => playRecording(recording.id) : null,
+                      onPressed: () => playRecording(recording.id),
                     ),
                   );
                 },
