@@ -10,19 +10,41 @@ class JanusRecordPlayPlugin extends JanusPlugin {
           transport: transport);
 
   /// [record]
-  /// Start recording a session. You can specify the file path and other optional parameters.
+  /// Start recording a session with a JSEP offer.
   ///
-  /// [name]: Name of the recording file.
+  /// [name]: Pretty name for the recording.
+  /// [id]: Optional unique numeric ID for the recording.
+  /// [filename]: Optional base path/name for the file.
   /// [audiocodec]: Optional preferred audio codec for the recording.
   /// [videocodec]: Optional preferred video codec for the recording.
-  /// [filename]: Optional base path/name for the file.
-  Future<int> record(String name, {String? audiocodec, String? videocodec, String? filename}) async {
+  /// [videoprofile]: Optional video profile to use (e.g., "2" for VP9, "42e01f" for H.264).
+  /// [opusred]: Optional, whether RED should be negotiated for audio (default=false).
+  /// [textdata]: Optional, whether recorded data channels will be text (default) or binary.
+  /// [jsep]: The SDP offer for the recording PeerConnection.
+  Future<int> record(String name, {
+    int? id,
+    String? filename,
+    String? audiocodec,
+    String? videocodec,
+    String? videoprofile,
+    bool opusred = false,
+    String textdata = "text",
+    required String jsep,
+  }) async {
     var payload = {
       "request": "record",
+      "id": id,
       "name": name,
+      "filename": filename,
       "audiocodec": audiocodec,
       "videocodec": videocodec,
-      "filename": filename,
+      "videoprofile": videoprofile,
+      "opusred": opusred,
+      "textdata": textdata,
+      "jsep": {
+        "type": "offer",
+        "sdp": jsep,
+      },
     }..removeWhere((key, value) => value == null);
 
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));

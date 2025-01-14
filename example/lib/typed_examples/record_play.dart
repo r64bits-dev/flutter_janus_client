@@ -39,22 +39,36 @@ class _RecordPlayExampleState extends State<RecordPlayExample> {
     await listRecordings();
   }
 
-  Future<void> startRecording() async {
-    String fileName = fileNameController.text.trim();
-    if (fileName.isNotEmpty) {
-      try {
-        await recordPlay.record(fileName);
+   Future<void> startRecording() async {
+      String fileName = fileNameController.text.trim();
+      if (fileName.isNotEmpty) {
+        try {
+          // Cria uma oferta para negociação de mídia
+          var offer = await recordPlay.createOffer(audioRecv: true, videoRecv: true);
+
+          // Chama o método record com o JSEP gerado
+          int recordingId = await recordPlay.record(
+            fileName,
+            jsep: offer.sdp!,
+          );
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Recording started: $fileName (ID: $recordingId)')),
+          );
+
+          await listRecordings();
+        } catch (e) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error starting recording: $e')),
+          );
+        }
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Recording started: $fileName')),
-        );
-        await listRecordings();
-      } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error starting recording: $e')),
+          SnackBar(content: Text('Please provide a valid file name.')),
         );
       }
     }
-  }
+
 
   Future<void> stopRecording() async {
     try {
