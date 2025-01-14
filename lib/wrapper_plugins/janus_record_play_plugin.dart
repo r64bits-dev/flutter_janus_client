@@ -13,65 +13,60 @@ class JanusRecordPlayPlugin extends JanusPlugin {
   /// Start recording a session. You can specify the file path and other optional parameters.
   ///
   /// [name]: Name of the recording file.
-  /// [video]: Boolean indicating if video should also be recorded.
-  /// [audio]: Boolean indicating if audio should also be recorded.
-  Future<void> record(String name, {bool? video, bool? audio}) async {
+  /// [audiocodec]: Optional preferred audio codec for the recording.
+  /// [videocodec]: Optional preferred video codec for the recording.
+  /// [filename]: Optional base path/name for the file.
+  Future<int> record(String name, {String? audiocodec, String? videocodec, String? filename}) async {
     var payload = {
       "request": "record",
       "name": name,
-      "video": video,
-      "audio": audio,
+      "audiocodec": audiocodec,
+      "videocodec": videocodec,
+      "filename": filename,
     }..removeWhere((key, value) => value == null);
+
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
     JanusError.throwErrorFromEvent(response);
+    return response.plugindata?.data["id"] ?? 0;
   }
 
-  /// [stopRecording]
-  /// Stops an ongoing recording.
-  ///
-  /// [name]: Name of the recording file to stop.
-  Future<void> stopRecording(String name) async {
+  /// [stop]
+  /// Stops an ongoing recording or playback.
+  Future<void> stop() async {
     var payload = {
       "request": "stop",
-      "name": name,
     };
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
     JanusError.throwErrorFromEvent(response);
   }
 
   /// [play]
-  /// Play a previously recorded file.
+  /// Prepare playback of a previously recorded file.
   ///
-  /// [name]: Name of the recording file to play.
-  /// [video]: Boolean indicating if video should also be played.
-  /// [audio]: Boolean indicating if audio should also be played.
-  Future<void> play(String name, {bool? video, bool? audio}) async {
+  /// [id]: The unique numeric ID of the recording to replay.
+  Future<void> play(int id) async {
     var payload = {
       "request": "play",
-      "name": name,
-      "video": video,
-      "audio": audio,
-    }..removeWhere((key, value) => value == null);
+      "id": id,
+    };
+
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
     JanusError.throwErrorFromEvent(response);
   }
 
-  /// [pause]
-  /// Pause playback of a recorded file.
-  Future<void> pause() async {
+  /// [start]
+  /// Starts the playback process for a prepared recording.
+  ///
+  /// [jsep]: The SDP answer for the playback PeerConnection.
+  Future<void> start(String jsep) async {
     var payload = {
-      "request": "pause",
+      "request": "start",
+      "jsep": {
+        "type": "answer",
+        "sdp": jsep,
+      },
     };
-    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
-    JanusError.throwErrorFromEvent(response);
-  }
 
-  /// [stopPlayback]
-  /// Stop playback of a recorded file.
-  Future<void> stopPlayback() async {
-    var payload = {
-      "request": "stop",
-    };
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
     JanusError.throwErrorFromEvent(response);
   }
@@ -82,10 +77,23 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     var payload = {
       "request": "list",
     };
+
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
     JanusError.throwErrorFromEvent(response);
-    var files = response.plugindata?.data["recordings"] as List<dynamic>;
+
+    var files = response.plugindata?.data["list"] as List<dynamic>;
     return files.map((file) => RecordPlayFile.fromJson(file)).toList();
+  }
+
+  /// [update]
+  /// Force the plugin to refresh the recordings folder.
+  Future<void> update() async {
+    var payload = {
+      "request": "update",
+    };
+
+    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
+    JanusError.throwErrorFromEvent(response);
   }
 
   /// [hangup]
@@ -93,7 +101,7 @@ class JanusRecordPlayPlugin extends JanusPlugin {
   @override
   Future<void> hangup() async {
     await super.hangup();
-    await this.send(data: {"request": "stop"});
+    await this.stop();
   }
 
   @override
@@ -107,11 +115,12 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     messages?.listen((event) {
       TypedEvent<JanusEvent> typedEvent =
           TypedEvent<JanusEvent>(event: JanusEvent.fromJson(event.event), jsep: event.jsep);
+
       var data = typedEvent.event.plugindata?.data;
       if (data == null) return;
+
       if (data["recordplay"] == "event") {
-        if (data["result"] == "ok") {
-          typedEvent.event.plugindata?.data = RecordPlayEvent.fromJson(data);
+        if (data["result"] == "done") {
           _typedMessagesSink?.add(typedEvent);
         } else if (data["error_code"] != null) {
           _typedMessagesSink?.addError(JanusError.fromMap(data));
@@ -124,30 +133,47 @@ class JanusRecordPlayPlugin extends JanusPlugin {
 }
 
 class RecordPlayFile {
+  final int id;
   final String name;
-  final int size;
-  final DateTime created;
+  final DateTime date;
+  final bool? audio;
+  final bool? video;
+  final bool? data;
+  final String? audioCodec;
+  final String? videoCodec;
 
-  RecordPlayFile({required this.name, required this.size, required this.created});
+  RecordPlayFile({
+    required this.id,
+    required this.name,
+    required this.date,
+    this.audio,
+    this.video,
+    this.data,
+    this.audioCodec,
+    this.videoCodec,
+  });
 
   factory RecordPlayFile.fromJson(Map<String, dynamic> json) {
     return RecordPlayFile(
+      id: json['id'],
       name: json['name'],
-      size: json['size'],
-      created: DateTime.parse(json['created']),
+      date: DateTime.parse(json['date']),
+      audio: json['audio'],
+      video: json['video'],
+      data: json['data'],
+      audioCodec: json['audio_codec'],
+      videoCodec: json['video_codec'],
     );
   }
 }
 
 class RecordPlayEvent {
-  final String name;
   final String status;
 
-  RecordPlayEvent({required this.name, required this.status});
+  RecordPlayEvent({required this.status});
 
   factory RecordPlayEvent.fromJson(Map<String, dynamic> json) {
     return RecordPlayEvent(
-      name: json['name'],
       status: json['status'],
     );
   }

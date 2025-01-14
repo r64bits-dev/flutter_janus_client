@@ -66,6 +66,14 @@ class _HomeState extends State<Home> {
                       Navigator.of(context).pushNamed("/typed_sip");
                     },
                   ),
+                   ListTile(
+                    title: Text.rich(
+                      TextSpan(children: [TextSpan(text: "Record Play"), TextSpan(text: "  New", style: TextStyle(color: Colors.green))]),
+                    ),
+                    onTap: () {
+                      Navigator.of(context).pushNamed("/record_play");
+                    },
+                  ),
                 ],
               ),
             ),
