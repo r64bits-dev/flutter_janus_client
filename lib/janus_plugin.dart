@@ -402,15 +402,19 @@ class JanusPlugin {
   }
 
   /// This method is crucial for communicating with Janus Server's APIs it takes in data and optionally jsep for negotiating with webrtc peers
-  Future<dynamic> send({dynamic data, RTCSessionDescription? jsep}) async {
+  Future<dynamic> send({dynamic data, RTCSessionDescription? jsep, bool sdp = false}) async {
     try {
       String transaction = getUuid().v4();
       Map<String, dynamic>? response;
       Map<String, dynamic> request = {"janus": "message", "body": data, "transaction": transaction, ..._context._apiMap, ..._context._tokenMap};
       if (jsep != null) {
-        _context._logger.finest("sending jsep");
-        _context._logger.finest(jsep.toMap());
-        request["jsep"] = jsep.toMap();
+        if (sdp) {
+          request["jsep"] = jsep.sdp;
+        } else {
+          _context._logger.finest("sending jsep");
+          _context._logger.finest(jsep.toMap());
+          request["jsep"] = jsep.toMap();
+        }
       }
       if (_transport is RestJanusTransport) {
         RestJanusTransport rest = (_transport as RestJanusTransport);
