@@ -49,10 +49,7 @@ class _RecordPlayExampleState extends State<RecordPlayExample> {
           // Chama o método record com o JSEP gerado
           int recordingId = await recordPlay.record(
             fileName,
-            jsep: {
-              "type": 'offer',
-              "sdp": offer.sdp!
-            },
+            jsep: offer.sdp!,
           );
 
           ScaffoldMessenger.of(context).showSnackBar(
