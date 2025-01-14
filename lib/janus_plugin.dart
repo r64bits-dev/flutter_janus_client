@@ -3,6 +3,7 @@ part of janus_client;
 abstract class JanusPlugins {
   static const VIDEO_ROOM = "janus.plugin.videoroom";
   static const AUDIO_BRIDGE = "janus.plugin.audiobridge";
+  static const RECORD_PLAY = "janus.plugin.recordplay";
   static const STREAMING = "janus.plugin.streaming";
   static const VIDEO_CALL = "janus.plugin.videocall";
   static const TEXT_ROOM = "janus.plugin.textroom";

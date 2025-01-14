@@ -70,6 +70,8 @@ class JanusSession {
       plugin = JanusStreamingPlugin(transport: _transport, context: _context, handleId: handleId, session: this);
     } else if (T == JanusAudioBridgePlugin) {
       plugin = JanusAudioBridgePlugin(transport: _transport, context: _context, handleId: handleId, session: this);
+    } else if (T == JanusRecordPlayPlugin) {
+      plugin = JanusRecordPlayPlugin(transport: _transport, context: _context, handleId: handleId, session: this);
     } else if (T == JanusTextRoomPlugin) {
       plugin = JanusTextRoomPlugin(transport: _transport, context: _context, handleId: handleId, session: this);
     } else if (T == JanusEchoTestPlugin) {

@@ -34,6 +34,8 @@ part './wrapper_plugins/janus_video_room_plugin.dart';
 
 part 'interfaces/typed_event.dart';
 
+part './wrapper_plugins/janus_record_play_plugin.dart';
+
 part './wrapper_plugins/janus_audio_bridge_plugin.dart';
 
 part './wrapper_plugins/janus_streaming_plugin.dart';
