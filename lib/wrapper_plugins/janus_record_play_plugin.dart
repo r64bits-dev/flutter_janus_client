@@ -43,9 +43,9 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     }..removeWhere((key, value) => value == null);
 
 
-    var offer = await this.createOffer(videoRecv: false, audioRecv: true);
-    print('OFFERSDP' + offer.sdp!);
-    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: offer));
+    RTCSessionDescription offer2 = await this.createOffer(videoRecv: false, audioRecv: true);
+    debugPrint('OFFERSDP' + offer2.sdp!);
+    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: offer2));
     JanusError.throwErrorFromEvent(response);
     return response.plugindata?.data["id"] ?? 0;
   }
