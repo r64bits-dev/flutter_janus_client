@@ -44,7 +44,7 @@ class JanusRecordPlayPlugin extends JanusPlugin {
 
 
     var offer = await this.createOffer(videoRecv: false, audioRecv: true);
-    
+    print('OFFERSDP' + offer.sdp!);
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: offer));
     JanusError.throwErrorFromEvent(response);
     return response.plugindata?.data["id"] ?? 0;
