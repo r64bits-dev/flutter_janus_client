@@ -28,7 +28,7 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     String? videocodec,
     String? videoprofile,
     bool opusred = false,
-    String textdata = "text"
+    bool textdata = false
   }) async {
     var payload = {
       "request": "record",
@@ -43,9 +43,8 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     }..removeWhere((key, value) => value == null);
 
 
-    RTCSessionDescription offer2 = await this.createOffer(videoRecv: false, audioRecv: true);
-    debugPrint('OFFERSDP' + offer2.sdp!);
-    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: offer2));
+    RTCSessionDescription offer = await this.createOffer(videoRecv: false, audioRecv: true);
+    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: offer));
     JanusError.throwErrorFromEvent(response);
     return response.plugindata?.data["id"] ?? 0;
   }

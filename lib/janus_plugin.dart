@@ -413,6 +413,7 @@ class JanusPlugin {
         request["jsep"] = jsep.toMap();
       }
       if (_transport is RestJanusTransport) {
+        print(request);
         RestJanusTransport rest = (_transport as RestJanusTransport);
         response = (await rest.post(request, handleId: handleId)) as Map<String, dynamic>;
       } else if (_transport is WebSocketJanusTransport) {

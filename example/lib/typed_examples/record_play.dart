@@ -36,6 +36,8 @@ class _RecordPlayExampleState extends State<RecordPlayExample> {
     );
     session = await client.createSession();
     recordPlay = await session.attach<JanusRecordPlayPlugin>();
+    await recordPlay.initializeMediaDevices(mediaConstraints: {"audio": true, "video": false});
+      
     await listRecordings();
   }
 
