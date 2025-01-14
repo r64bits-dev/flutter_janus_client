@@ -29,7 +29,7 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     String? videoprofile,
     bool opusred = false,
     String textdata = "text",
-    required String jsep,
+    required Map<String, dynamic> jsep,
   }) async {
     var payload = {
       "request": "record",
