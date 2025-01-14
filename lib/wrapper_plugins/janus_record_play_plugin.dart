@@ -47,7 +47,10 @@ class JanusRecordPlayPlugin extends JanusPlugin {
       },
     }..removeWhere((key, value) => value == null);
 
-    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload));
+
+    var offer = await this.createOffer(videoRecv: false, audioRecv: true);
+    
+    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: offer));
     JanusError.throwErrorFromEvent(response);
     return response.plugindata?.data["id"] ?? 0;
   }
@@ -142,10 +145,10 @@ class JanusRecordPlayPlugin extends JanusPlugin {
       if (data == null) return;
 
       if (data["recordplay"] == "event") {
-        if (data["result"] == "done") {
-          _typedMessagesSink?.add(typedEvent);
-        } else if (data["error_code"] != null) {
+        if (data["error_code"] != null) {
           _typedMessagesSink?.addError(JanusError.fromMap(data));
+        } else {
+          _typedMessagesSink?.add(typedEvent);
         }
       }
     });
