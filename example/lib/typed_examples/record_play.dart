@@ -88,6 +88,7 @@ class _RecordPlayExampleState extends State<RecordPlayExample> {
   Future<void> playRecording(int id) async {
     try {
       await recordPlay.play(id);
+       await recordPlay.start();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Playing recording: $id')),
       );
