@@ -81,7 +81,9 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     var payload = {
       "request": "start"
     };
-    
+    if(jsep == null) {
+      jsep  = await this.createOffer(videoRecv: false, audioRecv: true);
+    }
     JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: jsep));
     JanusError.throwErrorFromEvent(response);
   }
