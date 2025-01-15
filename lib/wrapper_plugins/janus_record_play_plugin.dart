@@ -77,14 +77,14 @@ class JanusRecordPlayPlugin extends JanusPlugin {
   /// Starts the playback process for a prepared recording.
   ///
   /// [jsep]: The SDP answer for the playback PeerConnection.
-  Future<void> start(RTCSessionDescription? jsep) async {
+  Future<void> start() async {
     var payload = {
       "request": "start"
     };
-    if(jsep == null) {
-      jsep  = await this.createOffer(videoRecv: false, audioRecv: true);
-    }
-    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: jsep));
+    
+    var offer  = await this.createOffer(videoRecv: false, audioRecv: true);
+    
+    JanusEvent response = JanusEvent.fromJson(await this.send(data: payload, jsep: offer));
     JanusError.throwErrorFromEvent(response);
   }
 
