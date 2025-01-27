@@ -88,6 +88,23 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     JanusError.throwErrorFromEvent(response);
   }
 
+  Future<void> startRecording(String name) async {
+    final offer = await this.createOffer();
+    final body = {
+      "request": "record",
+      "name": name,
+    };
+
+    final message = {
+      "janus": "message",
+      "body": body,
+      "jsep": offer.toMap()
+    };
+
+    JanusEvent response = JanusEvent.fromJson(await this.send(data: message));
+    JanusError.throwErrorFromEvent(response);
+  }
+
   /// [list]
   /// List all recordings available.
   Future<List<RecordPlayFile>> list() async {
@@ -132,6 +149,7 @@ class JanusRecordPlayPlugin extends JanusPlugin {
     messages?.listen((event) {
       TypedEvent<JanusEvent> typedEvent =
           TypedEvent<JanusEvent>(event: JanusEvent.fromJson(event.event), jsep: event.jsep);
+
 
       var data = typedEvent.event.plugindata?.data;
       if (data == null) return;

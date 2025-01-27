@@ -72,6 +72,9 @@ class _AudioRoomState extends State<TypedAudioRoomV2> {
         setState(() {
           allStreams.putIfAbsent(event.mid!, () => stream);
         });
+        
+        event.track!.enableSpeakerphone(true);
+
         allStreams[event.mid!]?.addTrack(event.track!);
         remoteRenderers[event.mid!]?.srcObject = allStreams[event.mid!];
         if (kIsWeb) {
